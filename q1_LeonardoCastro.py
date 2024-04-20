@@ -1,60 +1,89 @@
-user1 = {"name": "Leonardo", "balance": 1000, "account": 1234}
-user2 = {"name": "Lucas", "balance": 1000, "account": 5678}
-user3 = {"name": "Pedro", "balance": 1000, "account": 9101}
-user4 = {"name": "João", "balance": 1000, "account": 1121}
+USER1 = lambda: {"senha": 1234, "saldo": 1000}
+USER2 = lambda: {"senha": 5678, "saldo": 2000}
 
-logedUser = user1
-accountList = [user1, user2, user3, user4]
+usuario1 = USER1()
+usuario2 = USER2()
 
-checkCash = lambda cash: cash if cash.isnumeric() and int(cash) > 0 else "Invalid Value" if cash.isalpha() else "Invalid Value"
-checkAccount = lambda account: any(user["account"] == int(account) for user in accountList)
-checkAccountBalance = lambda account, value: (account if checkAccount(account) and int(value) <= logedUser["balance"] else "Insufficient funds") if account.isnumeric() and value.isnumeric() else "Invalid Value" if account.isalpha() or value.isalpha() else "Invalid Value"
+contasBancoFunc = lambda x, y: {"usuario1": x, "usuario2": y}
 
-addBalance = lambda account, value: [user.update({"balance": user["balance"] + int(value)}) for user in accountList if user["account"] == int(account)]
-removeBalance = lambda account, value: [user.update({"balance": user["balance"] - int(value)}) for user in accountList if user["account"] == int(account)]
+contasBanco = contasBancoFunc(usuario1, usuario2)
 
-def cash():
-    print("Cash")
-    value = input("Enter the amount to withdraw: ")
-    print(checkAccountBalance(str(logedUser["balance"]), value))
-    return completeCashTransaction(logedUser["account"], int(value)) if checkCash(value) == value else cash()
+# Operação de Cash
+def cash(valor):
+    imprimir("\nOperação de Cash")
+    imprimir(f"Valor: {valor}")
+    return confirmarCash(valor) if checkSaldo(list(usuarioLogado.keys())[0], valor) else f"Saldo insuficiente para efetuar o pagamento de R$ {valor}."
 
-def fund():
-    print("Fund Transfer")
-    account = input("Enter the account number: ")
-    value = input("Enter the amount to transfer: ")
-    print(checkAccountBalance(account, value))
-    return completeFundTransaction(account, value) if checkAccountBalance(account, value) == account else fund()
+def confirmarCash(valor):
+    descontarSaldo(list(usuarioLogado.keys())[0], valor)
+    imprimir(f"Pagamento de R$ {valor} efetuado com sucesso.")
+    imprimir(f"Saldo atual: {contasBanco[list(usuarioLogado.keys())[0]]['saldo']}")
+    return transacaoCompleta()
 
+# Operação de Transferência
+def fund(conta, valor):
+    imprimir("\nOperação de Transferência")
+    imprimir("Informações da conta para transferência:")
+    imprimir(f"Conta: {conta}")
+    imprimir(f"Valor: {valor}")
+    return confirmarOuCancelarFund if checkUsuario(conta) and checkSaldo(conta, valor) else cancelar()
 
-def credit():
-    print("Credit")
-    value = input("Enter the amount to deposit: ")
-    print(checkCash(value))
-    return completeCashTransaction(logedUser["account"], int(value)) if checkCash(value) == value else credit()
+def confirmarFund(conta, valor):
+    descontarSaldo(list(usuarioLogado.keys())[0], valor)
+    creditarSaldo(conta, valor)
+    imprimir(f"Transferência de R$ {valor} para a conta {conta} efetuada com sucesso.")
+    imprimir(f"Saldo atual: {contasBanco[list(usuarioLogado.keys())[0]]['saldo']}")
+    return transacaoCompleta()
 
-transactionChoice = (cash, fund, credit)
+# Operação de Crédito
+def credit(conta, valor):
+    imprimir("\nOperação de Crédito")
+    imprimir("Informações da conta para creditar:")
+    imprimir(f"Conta: {conta}")
+    imprimir(f"Valor: {valor}")
+    return confirmarOuCancelarCredit if checkUsuario(conta) else "Conta inválida."
 
-createTransaction = lambda escolha:  (transactionChoice[int(escolha)]() if int(escolha) <= 2 else "ERROR") if escolha.isnumeric() else "ERROR" if escolha.isalpha() else "ERROR"
+def confirmarCredit(conta, valor):
+    creditarSaldo(conta, valor)
+    imprimir(f"Crédito de R$ {valor} na conta {conta} efetuado com sucesso.")
+    imprimir(f"Saldo atual: {contasBanco[conta]['saldo']}")
 
-def completeCashTransaction(account, value):
-    removeBalance(account, value)
-    print("User: ", logedUser["name"])
-    print("User Balance: ", logedUser["balance"])
-    return completeTransaction()
+def confirmarCredit(conta, valor):
+    creditarSaldo(conta, valor)
+    return transacaoCompleta()
 
-def completeFundTransaction(accountReceive, value):
-    removeBalance(logedUser["account"], value)
-    addBalance(accountReceive, value)
-    
-    print("User: ", logedUser["name"])
-    print("User Balance: ", logedUser["balance"])
-    
-    print("User Receive: ", accountList[accountList.index(next(user for user in accountList if user["account"] == int(accountReceive)))]["name"])
-    print("User Balance: ", next(user["balance"] for user in accountList if user["account"] == int(accountReceive)))
-    return completeTransaction()
+# Operação de Login e Seleção de Transação
+def loginAction(usuario):
+    usuarioLogado.update({usuario: contasBanco[usuario]})
+    return criarTransacao
 
-completeTransaction = lambda: "Transaction Completed"
-closeTransaction = lambda: "Transaction Closed"
+listaTransacaoFunc = lambda cash, fund, credit: (cash, fund, credit)
+listaTransacao = listaTransacaoFunc(cash, fund, credit)
 
-print(createTransaction(input("Choose a transaction: \n0 - Cash \n1 - Fund Trasnfer \n2 - Credit:\n")))
+imprimir = lambda funcao: print(funcao)
+
+checkUsuario = lambda usuario: usuario in contasBanco
+checkSaldo = lambda usuario, valor: contasBanco[usuario]["saldo"] >= valor
+
+login = lambda usuario, senha: usuario in contasBanco and contasBanco[usuario]["senha"] == senha
+
+usuarioLogado = {}
+executarLogin = lambda usuario, senha: loginAction(usuario) if login(usuario, senha) else "Usuário ou senha inválidos."
+
+descontarSaldo = lambda usuario, valor: contasBanco[usuario].update({"saldo": contasBanco[usuario]["saldo"] - valor})
+creditarSaldo = lambda usuario, valor: contasBanco[usuario].update({"saldo": contasBanco[usuario]["saldo"] + valor})
+
+criarTransacao = lambda escolha: listaTransacao[int(escolha)]
+confirmarOuCancelarFund = lambda escolha, conta = None, valor = None: confirmarFund(conta, valor) if escolha else cancelar()
+confirmarOuCancelarCredit = lambda escolha, conta = None, valor = None: confirmarCredit(conta, valor) if escolha else cancelar()
+
+confirmar = lambda: transacaoCompleta() + "\n" + transacaoEncerrada()
+cancelar = lambda: transacaoCancelada() + "\n" + transacaoEncerrada()
+
+transacaoCompleta = lambda: "Operação autorizada pelo banco.\nTransação completa."
+transacaoEncerrada = lambda: "Transação encerrada."
+transacaoCancelada = lambda: "Transação cancelada."
+
+# imprimir(executarLogin("usuario1", 1234)(0)(100))
+# imprimir(executarLogin("usuario1", 1234)(1)("usuario2", 100)(False))
+# imprimir(executarLogin("usuario1", 1234)(2)("usuario2", 100)(True, "usuario2", 150))
