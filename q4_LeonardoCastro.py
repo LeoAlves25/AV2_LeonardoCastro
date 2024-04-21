@@ -1,30 +1,34 @@
 listaColunas = lambda t1, t2: [e for e in t1[1] if e in t2[1]]
 
-colunasJoin = lambda table, columns=None: f"\n, {table[0].lower()}.".join(columns) if columns else "*"
+colunasJoin = lambda colunas=None: f"\n, ".join(colunas) if colunas else "*"
 
-textInnerJoin = lambda t1, t2: f" INNER JOIN {t2[0]} {t2[2]} ON "
-textInnerJoinColmuns = lambda t1, t2, commonattrs: ''.join(map(lambda i_attr: " AND " + f"{t1[2]}.{i_attr[1]} = {t2[2]}.{i_attr[1]}" if i_attr[0] > 0 else f"{t1[2]}.{i_attr[1]} = {t2[2]}.{i_attr[1]}", enumerate(commonattrs)))
+addColAlias = lambda arraDeTuplas: [f"{tabela[2]}.{col}" for tabela in arraDeTuplas for col in tabela[1]] if arraDeTuplas else None
 
-textSelect = lambda table, columns_str: f"SELECT {table[0].lower()}.{columns_str} \nFROM {table} {table[0].lower()}"
+textoInnerJoin = lambda t2: f" INNER JOIN {t2[0]} {t2[2]} ON "
+textoInnerJoinColmuns = lambda t1, t2, commonattrs: ''.join(map(lambda i_attr: " AND " + f"{t1[2]}.{i_attr[1]} = {t2[2]}.{i_attr[1]}" if i_attr[0] > 0 else f"{t1[2]}.{i_attr[1]} = {t2[2]}.{i_attr[1]}", enumerate(commonattrs)))
 
-conditionWhere = lambda condition: f" WHERE {condition}" if condition else ""
+textoSelect = lambda tabela, colunasStr: f"SELECT {colunasStr} \nFROM {tabela} {tabela[0].lower()}"
 
-def gen_inner_join(t1, t2):
+condicaoWhere = lambda condicao: f" WHERE {condicao}" if condicao else ""
+
+def montarJoin(t1, t2):
     commonattrs = listaColunas(t1, t2)
-    code = textInnerJoin(t1, t2)
-    code += textInnerJoinColmuns(t1, t2, commonattrs)
+    code = textoInnerJoin(t2)
+    code += textoInnerJoinColmuns(t1, t2, commonattrs)
     return code
 
-def select_records(table, columns=None, condition=None):
-    columns_str = colunasJoin(table, columns)
-    query = textSelect(table, columns_str)
-    query += conditionWhere(condition)
+def montarSelect(tabela, colunas=None, condicao=None):
+    colunasArray = addColAlias(colunas)
+    colunasStr = colunasJoin(colunasArray)
+    query = textoSelect(tabela, colunasStr)
+    query += condicaoWhere(condicao)
     return query
 
+# Tabelas sendo salvas como tuplas onde vai ter o nome da tabela, as colunas e um alias para a tabela
 VIDEOGAMES = lambda:  ("VIDEOGAMES", ["id_game", "name", "genre", "release_date", "id_console"], "v")
 GAMES = lambda:  ("GAMES", ["id_game", "id_console", "title", "genre", "release_date", "id_company"], "g")
 COMPANY = lambda:  ("COMPANY", ["id_company", "name", "country"], "c")
 
 imprimir = lambda f1, f2, f3: print(f"{f1}\n{f2}\n{f3}")
 
-imprimir(select_records(GAMES()[0], GAMES()[1]), gen_inner_join(GAMES(), VIDEOGAMES()), gen_inner_join(GAMES(), COMPANY()))
+# imprimir(montarSelect(GAMES()[0], (GAMES(), VIDEOGAMES(), COMPANY()), "v.id_game = 1"), montarJoin(GAMES(), VIDEOGAMES()), montarJoin(GAMES(), COMPANY()))
