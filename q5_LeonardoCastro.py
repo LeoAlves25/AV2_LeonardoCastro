@@ -30,6 +30,7 @@ check_password = lambda : welcome() if password_match(users()) else wrong()
 check_if_user_exists = lambda : check_password() if f'{request.form["username"]}' in users() else invalid()
 reqresp = lambda : check_if_user_exists() if request.method == "POST" else render_template("index.html")
 
+# Ao executar o código e obtiver sucesso em realizar o login, o Scaffold será exibido no console
 def welcome():
     imprimir(montarSelect(GAMES()[0], (GAMES(), VIDEOGAMES(), COMPANY()), "v.id_game = 1"), montarJoin(GAMES(), VIDEOGAMES()), montarJoin(GAMES(), COMPANY()))
     return f"Bem-vindo {request.form['username']}!\nO Scaffold criado se encontra no console."

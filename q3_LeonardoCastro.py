@@ -14,16 +14,18 @@ selectTabelaQuery = lambda columns_str, table: f"SELECT {columns_str} FROM {tabl
 conditionWhere = lambda condition: f" WHERE {condition}" if condition else ""
 
 # Conectar ao banco de dados MySQL
-db_connection = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="12345678",
-    database="funcional_av2"
+mySqlConnection = lambda host, user, password, database: mysql.connector.connect(
+    host=host,
+    user=user,
+    password=password,
+    database=database
 )
-db_cursor = db_connection.cursor()
+
+dbConnection = mySqlConnection("localhost", "root", "12345678", "funcional_av2")
+
+db_cursor = dbConnection.cursor()
 
 # Funções com tabelas e colunas
-
 USERS = lambda:  ("USERS", ["id", "name", "country", "id_console"])
 VIDEOGAMES = lambda:  ("VIDEOGAMES", ["id_game", "name", "genre", "release_date", "id_console"])
 COMPANY = lambda:  ("COMPANY", ["id_company", "name", "country"])
@@ -31,41 +33,37 @@ GAMES = lambda:  ("GAMES", ["id_game", "id_console", "title", "genre", "release_
 
 
 # Definir funções para inserção, remoção e consulta
-
-def insert_record(table, values):
+def insertRecord(table, values):
     valuesJoin = joinValuesText(values)
     query = insertTabelaQuery(table, valuesJoin)
-    return query
-    # db_cursor.execute(query)
-    # db_connection.commit()
-
-def delete_record(table, condition):
-    query = deleteTabelaQuery(table, condition)
-    # return query
     db_cursor.execute(query)
-    db_connection.commit()
+    dbConnection.commit()
 
-def select_records(table, columns=None, condition=None):
+def deleteRecord(table, condition):
+    query = deleteTabelaQuery(table, condition)
+    db_cursor.execute(query)
+    dbConnection.commit()
+
+def selectRecords(table, columns=None, condition=None):
     columns_str = joinSelectText(columns)
     query = selectTabelaQuery(columns_str, table)
     query += conditionWhere(condition)
-    # return query
     db_cursor.execute(query)
     return db_cursor.fetchall()
 
-gen_insert_record = lambda table, values: insert_record(table[0], values)
-gen_delete_record = lambda table, condition: delete_record(table[0], condition)
-gen_select_record = lambda table, condition = None: select_records(table[0], table[1], condition)
+genInsertRecord = lambda table, values: insertRecord(table[0], values)
+genDeleteRecord = lambda table, condition: deleteRecord(table[0], condition)
+genSelectRecord = lambda table, condition = None: selectRecords(table[0], table[1], condition)
 
 # Inserir um registro na tabela USERS
-print(gen_insert_record(USERS(), [2, 1,"Teste", "Chile"]))
+genInsertRecord(USERS(), [2, 1,"Teste", "Chile"])
 
 # Remover um registro da tabela USERS
-# gen_delete_record(USERS(), "id = 2")
+genDeleteRecord(USERS(), "id = 2")
 
-# Consultar registros da tabela GAMES
-print(gen_select_record(USERS(), "id = 1"))
+# Consultar registros da tabela USERS
+print(genSelectRecord(USERS(), "id = 1"))
 
 # Fechar a conexão com o banco de dados ao final do uso
 db_cursor.close()
-db_connection.close()
+dbConnection.close()

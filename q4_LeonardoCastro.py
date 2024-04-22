@@ -31,4 +31,5 @@ COMPANY = lambda:  ("COMPANY", ["id_company", "name", "country"], "c")
 
 imprimir = lambda f1, f2, f3: print(f"{f1}\n{f2}\n{f3}")
 
+# Quando for executar o código da questão 5, comente a linha abaixo
 # imprimir(montarSelect(GAMES()[0], (GAMES(), VIDEOGAMES(), COMPANY()), "v.id_game = 1"), montarJoin(GAMES(), VIDEOGAMES()), montarJoin(GAMES(), COMPANY()))

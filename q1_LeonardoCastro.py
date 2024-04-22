@@ -88,6 +88,6 @@ transacaoCancelada = lambda: "Transação cancelada."
 # imprimir(executarLogin("usuario1", 1234)(0)(100))
 # imprimir(executarLogin("usuario1", 1234)(0)(10001))
 # imprimir(executarLogin("usuario1", 1234)(1)("usuario2", 100)(False))
-imprimir(executarLogin("usuario1", 1234)(1)("usuario2", 100)(True, "usuario2", 100))
+# imprimir(executarLogin("usuario1", 1234)(1)("usuario2", 100)(True, "usuario2", 100))
 # imprimir(executarLogin("usuario1", 1234)(2)(100)(True, list(usuarioLogado.keys())[0], 100))
 # imprimir(executarLogin("usuario1", 1234)(2)(10000))
